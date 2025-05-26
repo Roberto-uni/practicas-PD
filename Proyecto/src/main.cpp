@@ -1,67 +1,63 @@
-/*
-    An example of how to authenticate with Spotify without using a refresh token and print Artist and Track via Serial
+#include "WebRadio.h"
+#include "I2S_Audio.h"
+#include "wifi_connect.h"
+#include "Pantalla_SPI.h"
 
-In this example your current track will be printed to the serial and as soon as you listen to a new track that tracks information will be printed.
 
-    15.03.2024
-    Created by: Finian Landes
+// Pines I2S para ESP32-S3
+#define I2S_DOUT 21
+#define I2S_BCLK 20
+#define I2S_LRC  19
 
-    16.03.2024
-    edited by: Sascha Seidel
-        * added getting artist and trackname to print it Serial
+// Pines botones
+#define BOTON_SUBIR 4
+#define BOTON_BAJAR 5
 
-    Documentation: https://github.com/FinianLandes/Spotify_Esp32
-*/
-// Include the required libraries
-#include <Arduino.h>
-#include <WiFi.h>
-#include <SpotifyEsp32.h>
+// WiFi
+wifi_connect* red;
+const char* ssid = "RedmiNote7";
+const char* password = "estacosa";
 
-const char* SSID = "RedmiNote7";
-const char* PASSWORD = "estacosa";
-const char* CLIENT_ID = "c189e3a1cdb14e83b53a7b571f17243e";
-const char* CLIENT_SECRET = "22b848a4fd0840e4af0787d6c1f70bb6" ;
-const char* REFRESH_TOKEN = "AQBAxm5gwwGp2W_NQyFQLxNll_1L0bX02yfjqbRdEaH2Z0lE5tQTxSznikAsBe6DxEB2BSkhBmBPb2niWJtapaQyYXjpWYTVbgQCAz41WBv54ZjMoe3qPPNsazp-D2eeaPo";
 
-Spotify sp(CLIENT_ID, CLIENT_SECRET);
+// Stream
+const char* streamURL = "http://media-ice.musicradio.com/ClassicFMMP3";
 
-void connect_to_wifi();
+// Objetos
+I2S_Audio* i2s;
+WebRadio* radio;
+Pantalla_SPI pan;
 
 void setup() {
-    Serial.begin(115200);
-    connect_to_wifi();
-    
-    sp.begin();
-    while(!sp.is_auth()){
-        sp.handle_client();
-    }
-    Serial.println("Authenticated");
+  Serial.begin(115200);
+  pan.iniciar();
+  delay(500);
+  red->conectar(ssid,password);
+
+  pinMode(BOTON_SUBIR, INPUT_PULLUP);
+  pinMode(BOTON_BAJAR, INPUT_PULLUP);
+
+  i2s = new I2S_Audio(I2S_BCLK, I2S_LRC, I2S_DOUT, 0.8);
+  radio = new WebRadio(streamURL);
+
+  pan.mostrarNombreEstacion("ClassicFMMP3");
+  pan.mostrarVolumen(i2s->getGain());
+
+  radio->setOutput(i2s->get());
+  radio->begin(i2s->get());
 }
 
 void loop() {
-    static String lastArtist;
-    static String lastTrackname;
-    
-    String currentArtist = sp.current_artist_names();
-    String currentTrackname = sp.current_track_name();
-    
-    if (lastArtist != currentArtist && currentArtist != "Something went wrong" && !currentArtist.isEmpty()) {
-        lastArtist = currentArtist;
-        Serial.println("Artist: " + lastArtist);
-    }
-    
-    if (lastTrackname != currentTrackname && currentTrackname != "Something went wrong" && currentTrackname != "null") {
-        lastTrackname = currentTrackname;
-        Serial.println("Track: " + lastTrackname);
-    }
-}
+  radio->loop();
+    // Leer botones (activo bajo)
+  if (digitalRead(BOTON_SUBIR) == LOW) {
+    i2s->subirVolumen();
+    pan.mostrarVolumen(i2s->getGain());
+    delay(300); // debounce y evitar subidas muy rápidas
+  }
 
-void connect_to_wifi(){
-    WiFi.begin(SSID, PASSWORD);
-    Serial.print("Connecting to WiFi...");
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
-        Serial.print(".");
-    }
-    Serial.printf("\nConnected to WiFi\n");
+  if (digitalRead(BOTON_BAJAR) == LOW) {
+    i2s->bajarVolumen();
+    pan.mostrarVolumen(i2s->getGain());
+    delay(300); // debounce y evitar bajadas muy rápidas
+  }
 }
