@@ -2,62 +2,147 @@
 #include "I2S_Audio.h"
 #include "wifi_connect.h"
 #include "Pantalla_SPI.h"
-
-
-// Pines I2S para ESP32-S3
-#define I2S_DOUT 21
-#define I2S_BCLK 20
-#define I2S_LRC  19
+#include "Lector_SD.h"
 
 // Pines botones
-#define BOTON_SUBIR 4
-#define BOTON_BAJAR 5
+#define BOTON_NEXT 15  // BOTON SIGUIENTE CANCION/ESTACION
+#define BOTON_SUBIR 7 // BOTON PARA SUBIR EL VOLUMEN
+#define BOTON_PAUSA 6 // BOTON PARA PAUSAR/REANUDAR LA REPRODUCCION
+#define BOTON_BAJAR 5 // BOTON PARA BAJAR VOLUMEN
+#define BOTON_PREV 4 // BOTON VOLVER CANCION/ESTACION
 
+#define BOTON_WEBoSD 19 // BOTON VOLVER CANCION/ESTACION
 // WiFi
 wifi_connect* red;
-const char* ssid = "RedmiNote7";
-const char* password = "estacosa";
+const char* ssid = "DIGIFIBRA-EH74"; //DIGIFIBRA-EH74    RedmiNote7
+const char* password = "FCPTEX5t35"; // FCPTEX5t35      estacosa
 
 
 // Stream
 const char* streamURL = "http://media-ice.musicradio.com/ClassicFMMP3";
+const char* cancion = "/Korn_Blind.mp3";
+
+// Reproduccion desde web o desde SD
+bool webosd = true;
+std::vector<String> listaCanciones;
 
 // Objetos
 I2S_Audio* i2s;
 WebRadio* radio;
 Pantalla_SPI pan;
+Lector_SD sd;
 
 void setup() {
   Serial.begin(115200);
   pan.iniciar();
-  delay(500);
-  red->conectar(ssid,password);
+  sd.iniciar();
+  pan.mostrarTexto("iniciando sd",20);
+  delay(1000);
+  red->conectar(ssid, password,pan);
 
+  //asignacion de pines de botones
+  pinMode(BOTON_NEXT, INPUT_PULLUP);
   pinMode(BOTON_SUBIR, INPUT_PULLUP);
+  pinMode(BOTON_PAUSA, INPUT_PULLUP);
   pinMode(BOTON_BAJAR, INPUT_PULLUP);
+  pinMode(BOTON_PREV, INPUT_PULLUP);
+  pinMode(BOTON_WEBoSD, INPUT_PULLUP);
 
-  i2s = new I2S_Audio(I2S_BCLK, I2S_LRC, I2S_DOUT, 0.8);
-  radio = new WebRadio(streamURL);
+  i2s = new I2S_Audio(I2S_BCLK, I2S_LRC, I2S_DOUT);
+  
 
-  pan.mostrarNombreEstacion("ClassicFMMP3");
+  pan.mostrarTexto("iniciando sd",20);
   pan.mostrarVolumen(i2s->getGain());
+ Serial.println("prueba1");
 
-  radio->setOutput(i2s->get());
-  radio->begin(i2s->get());
+  listaCanciones = sd.obtenerListaCanciones();
+   Serial.println("prueba2");
+
+  i2s->begin_SD(listaCanciones, 0);
+   Serial.println("prueba3");
+
+  pan.mostrarNombreCancion(i2s->getNombreCancionActual());
+  pan.mostrarNombreEstacion("Reproduciendo desde SD");
+  
 }
 
 void loop() {
-  radio->loop();
-    // Leer botones (activo bajo)
+
+  // Cambiar modo SD/Web
+  if (digitalRead(BOTON_WEBoSD) == LOW) {
+    webosd = !webosd;
+    Serial.println("webos");
+
+    // Detener reproducción actual
+    if (i2s->isPlaying()) {
+      i2s->stop();  
+    }
+
+    // Iniciar nuevo modo
+    if (webosd) {
+      i2s->begin_web(streamURL);
+      pan.limpiar();
+      pan.mostrarNombreEstacion("ClassicFMMP3");
+    } else {
+      i2s->begin_SD(listaCanciones, 0);
+      pan.mostrarNombreCancion(i2s->getNombreCancionActual());
+      pan.limpiar();
+      pan.mostrarNombreEstacion("Reproduciendo desde SD");
+      pan.mostrarNombreCancion(i2s->getNombreCancionActual());
+      pan.mostrarEstadoReproduccion(i2s->isPaused());
+    }
+
+    delay(300); // Evita múltiples cambios por rebote
+  }
+
+  
+
+  // Ejecutar loop según el modo actual
+  if (webosd) {
+    i2s->loop_web(streamURL);
+  } else {
+    i2s->loop_SD(cancion);
+  }
+
+// Pausar/Reanudar solo si se está en SD
+if (!webosd && digitalRead(BOTON_PAUSA) == LOW) {
+  i2s->Pausa();
+  pan.mostrarEstadoReproduccion(i2s->isPaused());
+  delay(300);
+}
+
+
+  // Controles de volumen
   if (digitalRead(BOTON_SUBIR) == LOW) {
     i2s->subirVolumen();
     pan.mostrarVolumen(i2s->getGain());
-    delay(300); // debounce y evitar subidas muy rápidas
+    delay(300); 
   }
 
   if (digitalRead(BOTON_BAJAR) == LOW) {
     i2s->bajarVolumen();
     pan.mostrarVolumen(i2s->getGain());
-    delay(300); // debounce y evitar bajadas muy rápidas
+    delay(300); 
+  }
+
+  //Cambiar de cancion
+  // Siguiente canción (solo en modo SD)
+  if (!webosd && digitalRead(BOTON_NEXT) == LOW) {
+    i2s->siguienteCancion();
+    pan.mostrarNombreCancion(i2s->getNombreCancionActual());
+    pan.mostrarEstadoReproduccion(i2s->isPaused());
+    delay(300);
+  }
+
+  if (!webosd && digitalRead(BOTON_PREV) == LOW) {
+    i2s->AnteriorCancion();
+    pan.mostrarNombreCancion(i2s->getNombreCancionActual());
+    pan.mostrarEstadoReproduccion(i2s->isPaused());
+    delay(300);
   }
 }
+
+
+
+
+
