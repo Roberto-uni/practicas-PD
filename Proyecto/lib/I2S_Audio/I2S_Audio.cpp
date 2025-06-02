@@ -37,6 +37,8 @@ void I2S_Audio::loop_web( const char* streamURL  ) {
 void I2S_Audio::begin_SD(const std::vector<String>& lista, int index) {
     canciones = lista;
     indiceActual = index % canciones.size();
+    tiempoInicio = millis();
+    tiempoAcumulado = 0;
 
     sfile = new AudioFileSourceSD(("/" + canciones[indiceActual]).c_str());
     mp3 = new AudioGeneratorMP3();
@@ -85,6 +87,20 @@ void I2S_Audio::AnteriorCancion() {
     stop();
     begin_SD(canciones, indiceActual);  // Reproduce siguiente
 }
+
+uint32_t I2S_Audio::getDuracionEstimado() {
+    if (canciones.empty()) return 0;
+    String nombre = canciones[indiceActual];
+    File archivo = SD.open("/" + nombre);
+    if (!archivo) return 0;
+
+    uint32_t tamanio = archivo.size();  // bytes
+    archivo.close();
+
+    const uint32_t bitrate = 8000; // 128 kbps = 16,000 bytes/s
+    return tamanio / bitrate; // segundos aproximados
+}
+
 
 
 /////////   Metodos Generales    /////////    
@@ -142,12 +158,23 @@ void I2S_Audio::Pausa() {
     if (mp3 && mp3->isRunning()) {
         paused = !paused;
         if (paused) {
+            tiempoAcumulado += (millis() - tiempoInicio) / 1000;
             Serial.println("⏸ Pausado");
         } else {
+            tiempoInicio = millis();
             Serial.println("▶ Reanudado");
         }
     }
 }
+
+uint32_t I2S_Audio::getTiempoActual() {
+    if (paused) {
+        return tiempoAcumulado;
+    } else {
+        return tiempoAcumulado + (millis() - tiempoInicio) / 1000;
+    }
+}
+
 
 
 
