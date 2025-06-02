@@ -42,13 +42,14 @@ void Pantalla_SPI::mostrarNombreCancion(const String& nombre) {
 }
 
 void Pantalla_SPI::mostrarTiempo(uint32_t actual, uint32_t total) {
-
+    tft.fillRect(0, 90, 320, 20, TFT_BLACK);  // borrar solo línea de tiempo
+    tft.setTextSize(2);
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "%02d:%02d / %02d:%02d",
              actual / 60, actual % 60, total / 60, total % 60);
-    mostrarTexto(buffer, 80);
-
+    mostrarTexto(buffer, 90);
 }
+
 
 void Pantalla_SPI::mostrarEstadoReproduccion(bool pausado) {
     // Borra el área donde se mostrará el estado (ajusta tamaño y posición si es necesario)
