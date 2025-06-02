@@ -2,25 +2,23 @@
 #include <SD.h>
 #include <FS.h>
 #include <SPI.h>
-#include <TFT_eSPI.h>
-// Pines
-/*#define PIN_MOSI   11
-#define PIN_MISO   13
-#define PIN_SCLK   12
-#define TFT_CS     10
-#define TFT_DC     8
-#define TFT_RST    9*/
+#include <vector>
 
+// Pines para SPI3 (HSPI)
+#define PIN_SPI_MISO 36
+#define PIN_SPI_MOSI 35
+#define PIN_SPI_SCK  37
+#define PIN_SPI_CS   38
 
-
-const int SD_CS = 14;  // Cambia este valor al pin CS correcto para tu hardware
-
-
+// Declaración de SPI_SD
+extern SPIClass SPI_SD;
 
 class Lector_SD {
 public:
     bool iniciar();
     File obtenerCancion(const String& nombreArchivo);
     void listarCanciones();
-    
+    std::vector<String> obtenerListaCanciones();
+private:
+    std::vector<String> canciones;
 };
