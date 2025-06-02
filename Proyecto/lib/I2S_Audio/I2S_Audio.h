@@ -1,18 +1,52 @@
 #pragma once
 #include <AudioOutputI2S.h>
-#define I2S_DOUT 21  
-#define I2S_BCLK 20
-#define I2S_LRC  19
+#include <AudioFileSourceICYStream.h>
+#include "AudioFileSourceSD.h"
+#include <AudioGeneratorMP3.h>
+#include <AudioOutputI2S.h>  
+#include <vector>
 
+#define I2S_DOUT 40
+#define I2S_BCLK 41
+#define I2S_LRC  42
 
 class I2S_Audio {
 public:
-    I2S_Audio(int bclk, int lrc, int dout, float gain );
+    I2S_Audio(int bclk, int lrc, int dout);
+
+    //metodos web
+    void begin_web( const char* streamURL);
+    void loop_web(const char* url  ) ;
+
+    //metodos sd
+    void begin_SD( const std::vector<String>& lista, int index);
+    void loop_SD(const char* nombre_archivo  ) ;
+    void siguienteCancion();
+    void AnteriorCancion();
+    String getNombreCancionActual();
+
     AudioOutputI2S* get();
+    void stop();
+
+    bool isPlaying();
+    bool isPaused();
+
     void subirVolumen();
     void bajarVolumen();
+    void Pausa();
+
     float getGain() const { return gain; };
+
 private:
+    AudioFileSourceICYStream* wfile;//para gestionar la reproduccion de audio desde una https
+    AudioFileSourceSD* sfile; //para gestionar la reproduccion de audio desde una sd
+
+    AudioGeneratorMP3* mp3;
     AudioOutputI2S* out;
-    float gain ;
+    float gain = 1.0f ;
+    bool paused = false;
+    //----- vector para poder pasar de cancion-------
+    std::vector<String> canciones;
+    int indiceActual = 0;
+
 };
