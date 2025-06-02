@@ -24,6 +24,10 @@ public:
     void siguienteCancion();
     void AnteriorCancion();
     String getNombreCancionActual();
+    uint32_t getTiempoActual();   // tiempo transcurrido en segundos
+    uint32_t getDuracionEstimado();
+
+
 
     AudioOutputI2S* get();
     void stop();
@@ -48,5 +52,8 @@ private:
     //----- vector para poder pasar de cancion-------
     std::vector<String> canciones;
     int indiceActual = 0;
+    private:
+     unsigned long tiempoInicio = 0;    // millis() en que empezó la canción
+    uint32_t tiempoAcumulado = 0;      // segundos acumulados antes de pausar
 
 };
