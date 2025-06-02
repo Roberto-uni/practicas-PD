@@ -23,8 +23,12 @@ const char* streamURL = "http://media-ice.musicradio.com/ClassicFMMP3";
 const char* cancion = "/Korn_Blind.mp3";
 
 // Reproduccion desde web o desde SD
-bool webosd = true;
+bool webosd = false;  // false == SD, true == web
 std::vector<String> listaCanciones;
+
+//Mostrar tiempo pantalla
+unsigned long ultimoTiempoActual = 0;
+unsigned long ultimoUpdateMillis = 0;
 
 // Objetos
 I2S_Audio* i2s;
@@ -53,13 +57,13 @@ void setup() {
 
   pan.mostrarTexto("iniciando sd",20);
   pan.mostrarVolumen(i2s->getGain());
- Serial.println("prueba1");
+  Serial.println("prueba1");
 
   listaCanciones = sd.obtenerListaCanciones();
-   Serial.println("prueba2");
+  Serial.println("prueba2");
 
   i2s->begin_SD(listaCanciones, 0);
-   Serial.println("prueba3");
+  Serial.println("prueba3");
 
   pan.mostrarNombreCancion(i2s->getNombreCancionActual());
   pan.mostrarNombreEstacion("Reproduciendo desde SD");
@@ -95,22 +99,12 @@ void loop() {
     delay(300); // Evita múltiples cambios por rebote
   }
 
-  
-
   // Ejecutar loop según el modo actual
   if (webosd) {
     i2s->loop_web(streamURL);
   } else {
     i2s->loop_SD(cancion);
   }
-
-// Pausar/Reanudar solo si se está en SD
-if (!webosd && digitalRead(BOTON_PAUSA) == LOW) {
-  i2s->Pausa();
-  pan.mostrarEstadoReproduccion(i2s->isPaused());
-  delay(300);
-}
-
 
   // Controles de volumen
   if (digitalRead(BOTON_SUBIR) == LOW) {
@@ -125,9 +119,16 @@ if (!webosd && digitalRead(BOTON_PAUSA) == LOW) {
     delay(300); 
   }
 
+  // Pausar/Reanudar solo si se está en SD
+  if (!webosd && digitalRead(BOTON_PAUSA) == LOW) {
+   i2s->Pausa();
+   pan.mostrarEstadoReproduccion(i2s->isPaused());
+   delay(300);
+  }
+
   //Cambiar de cancion
   // Siguiente canción (solo en modo SD)
-  if (!webosd && digitalRead(BOTON_NEXT) == LOW) {
+  if ((!webosd && digitalRead(BOTON_NEXT) == LOW) || !i2s->isPlaying() ) {
     i2s->siguienteCancion();
     pan.mostrarNombreCancion(i2s->getNombreCancionActual());
     pan.mostrarEstadoReproduccion(i2s->isPaused());
@@ -140,9 +141,20 @@ if (!webosd && digitalRead(BOTON_PAUSA) == LOW) {
     pan.mostrarEstadoReproduccion(i2s->isPaused());
     delay(300);
   }
+  
+static unsigned long ultimaActualizacion = 0;
+if (!webosd && millis() - ultimaActualizacion >= 1000 && i2s->isPlaying()) {
+  uint32_t actual = i2s->getTiempoActual();
+  uint32_t total = 0;
+  if (!i2s->isPaused()){
+    pan.mostrarTiempo(actual, total);
+  }
+  
+  ultimaActualizacion = millis();
 }
 
 
+}
 
 
 
