@@ -4,53 +4,99 @@
 Pantalla_SPI ::Pantalla_SPI() : tft() {}
 
 void Pantalla_SPI::iniciar() {
+    
     tft.init();
-    tft.setRotation(1);
+    tft.setRotation(3);
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextSize(1);
+    
+}
+void Pantalla_SPI::limpiar(){
+    tft.fillScreen(TFT_BLACK);
 }
 
 void Pantalla_SPI::mostrarTexto(const String& texto, int y) {
+
     tft.fillRect(0, y, 320, 20, TFT_BLACK);
     tft.setCursor(10, y);
     tft.print(texto);
+
 }
 
 void Pantalla_SPI::mostrarNombreEstacion(const String& nombre) {
-    mostrarTexto("Estacion: " + nombre, 20);
+
+    tft.setTextSize(2);
+    mostrarTexto( nombre, 20);
+
 }
 
 void Pantalla_SPI::mostrarNombreCancion(const String& nombre) {
+    tft.setTextSize(1);
     if (nombre.length() > 0) {
         mostrarTexto("Cancion: " + nombre, 50);
     } else {
         mostrarTexto("Cancion: nombre no disponible", 50);
     }
+
 }
 
 void Pantalla_SPI::mostrarTiempo(uint32_t actual, uint32_t total) {
+
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "%02d:%02d / %02d:%02d",
              actual / 60, actual % 60, total / 60, total % 60);
     mostrarTexto(buffer, 80);
+
 }
 
-void Pantalla_SPI::mostrarVolumen(float volumen) {
-    // Asegurar que el volumen está entre 0 y 1
-    if (volumen < 0.0) volumen = 0.0;
-    if (volumen > 1.0) volumen = 1.0;
+void Pantalla_SPI::mostrarEstadoReproduccion(bool pausado) {
+    // Borra el área donde se mostrará el estado (ajusta tamaño y posición si es necesario)
+    tft.fillRect(0, 60, 160, 20, TFT_BLACK); // Área limpia
+    tft.setTextSize(1);
+    if (pausado) {
+        // Dibuja dos barras verticales (símbolo de pausa)
+        tft.fillRect(10, 65, 4, 10, TFT_WHITE);
+        tft.fillRect(18, 65, 4, 10, TFT_WHITE);
 
-    const int max_cuadros = 10;  // 10 cuadros = volumen máximo 1.0
-    int cuadros_activos = (int)(volumen * max_cuadros + 0.5); // redondear
+        // Muestra texto "Pausado"
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.setCursor(30, 70);
+        tft.setTextSize(1);
+        tft.print("Pausado");
+    } else {
+        // Dibuja triángulo (símbolo de reproducción)
+        tft.fillTriangle(10, 65, 10, 75, 20, 70, TFT_WHITE);
+
+        // Muestra texto "Reproduciendo"
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.setCursor(30, 70);
+        tft.setTextSize(1);
+        tft.print("Reproduciendo");
+    }
+}
+
+
+
+//#include <algorithm> // si estás en un entorno que lo soporta
+
+void Pantalla_SPI::mostrarVolumen(float volumen) {
+    // Asegurar que el volumen está entre 0.0 y 2.0
+    if (volumen < 0.0) volumen = 0.0;
+    if (volumen > 2.0) volumen = 2.0;
+
+    const float paso = 0.2;
+    const int max_cuadros = 10;  // 2.0 / 0.2 = 10 cuadros
+    int cuadros_activos = (int)(volumen / paso + 0.001); // evitar error de redondeo flotante
+    if (cuadros_activos > max_cuadros) cuadros_activos = max_cuadros;
 
     // Tamaño y posición de los cuadros
     const int cuadro_ancho = 12;
-    const int cuadro_alto = 20;
+    const int cuadro_alto = 10;
     const int espacio = 4;
 
     int x_inicio = (tft.width() - (max_cuadros * cuadro_ancho + (max_cuadros - 1) * espacio)) / 2;
-    int y_inicio = tft.height() - cuadro_alto - 10; // 10 px de margen inferior
+    int y_inicio = tft.height() - cuadro_alto - 40; // 10 px de margen inferior
 
     // Colores
     uint16_t color_activo = TFT_GREEN;
@@ -61,7 +107,9 @@ void Pantalla_SPI::mostrarVolumen(float volumen) {
         int x = x_inicio + i * (cuadro_ancho + espacio);
         uint16_t color = (i < cuadros_activos) ? color_activo : color_inactivo;
         tft.fillRect(x, y_inicio, cuadro_ancho, cuadro_alto, color);
-        // opcional: borde
-        tft.drawRect(x, y_inicio, cuadro_ancho, cuadro_alto, TFT_WHITE);
+        tft.drawRect(x, y_inicio, cuadro_ancho, cuadro_alto, TFT_WHITE); // borde opcional
     }
 }
+
+
+
