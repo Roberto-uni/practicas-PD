@@ -52,7 +52,7 @@ void I2S_Audio::begin_SD(const std::vector<String>& lista, int index) {
     Serial.println("Reproduciendo: " + canciones[indiceActual]);
 }
 
-void I2S_Audio::loop_SD( const char* nombre_archivo ){
+void I2S_Audio::loop_SD(  ){
     
     if (paused) {
         return;  // No hacer nada si está en pausa
@@ -139,16 +139,16 @@ void I2S_Audio::stop() {
 }
 
 void I2S_Audio::subirVolumen() {
-    gain += 0.2f;
-    if (gain > 2.0f) gain = 2.0f;
+    gain += 0.3;
+    if (gain > 3.0) gain = 3.0;
     out->SetGain(gain);
     Serial.println(String("subiendo volumen: ") + gain);
 }
 
 void I2S_Audio::bajarVolumen() {
     
-    gain -= 0.2f;
-    if (gain < 0.0f) gain = 0.0f;
+    gain -= 0.3;
+    if (gain < 0.0) gain = 0.0;
     out->SetGain(gain);
     Serial.println(String("Bajando volumen: ") + gain);
 ;
