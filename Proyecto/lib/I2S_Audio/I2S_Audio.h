@@ -20,7 +20,7 @@ public:
 
     //metodos sd
     void begin_SD( const std::vector<String>& lista, int index);
-    void loop_SD(const char* nombre_archivo  ) ;
+    void loop_SD(  ) ;
     void siguienteCancion();
     void AnteriorCancion();
     String getNombreCancionActual();
@@ -47,8 +47,9 @@ private:
 
     AudioGeneratorMP3* mp3;
     AudioOutputI2S* out;
-    float gain = 1.0f ;
+    float gain = 1.5 ;
     bool paused = false;
+
     //----- vector para poder pasar de cancion-------
     std::vector<String> canciones;
     int indiceActual = 0;
