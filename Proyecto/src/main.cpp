@@ -12,15 +12,14 @@
 #define BOTON_PREV 4 // BOTON VOLVER CANCION/ESTACION
 
 #define BOTON_WEBoSD 19 // BOTON VOLVER CANCION/ESTACION
+
 // WiFi
 wifi_connect* red;
 const char* ssid = "DIGIFIBRA-EH74"; //DIGIFIBRA-EH74    RedmiNote7
 const char* password = "FCPTEX5t35"; // FCPTEX5t35      estacosa
 
-
 // Stream
-const char* streamURL = "http://media-ice.musicradio.com/ClassicFMMP3";
-const char* cancion = "/Korn_Blind.mp3";
+const char* streamURL = "http://media-ice.musicradio.com/ClassicFMMP3";//http://media-ice.musicradio.com/ClassicFMMP3
 
 // Reproduccion desde web o desde SD
 bool webosd = false;  // false == SD, true == web
@@ -36,6 +35,7 @@ WebRadio* radio;
 Pantalla_SPI pan;
 Lector_SD sd;
 
+//inicializacion del programa
 void setup() {
   Serial.begin(115200);
   pan.iniciar();
@@ -62,12 +62,13 @@ void setup() {
   listaCanciones = sd.obtenerListaCanciones();
   Serial.println("prueba2");
 
+  //Empezamos el dispositivo en reproduccion desde la SD
   i2s->begin_SD(listaCanciones, 0);
   Serial.println("prueba3");
 
   pan.mostrarNombreCancion(i2s->getNombreCancionActual());
   pan.mostrarNombreEstacion("Reproduciendo desde SD");
-  
+  pan.mostrarEstadoReproduccion(i2s->isPaused());
 }
 
 void loop() {
@@ -103,7 +104,7 @@ void loop() {
   if (webosd) {
     i2s->loop_web(streamURL);
   } else {
-    i2s->loop_SD(cancion);
+    i2s->loop_SD();
   }
 
   // Controles de volumen
@@ -142,6 +143,7 @@ void loop() {
     delay(300);
   }
   
+  //contador del tiempo de reproduccion de una cancion
 static unsigned long ultimaActualizacion = 0;
 if (!webosd && millis() - ultimaActualizacion >= 1000 && i2s->isPlaying()) {
   uint32_t actual = i2s->getTiempoActual();
