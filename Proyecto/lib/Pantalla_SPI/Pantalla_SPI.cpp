@@ -41,12 +41,12 @@ void Pantalla_SPI::mostrarNombreCancion(const String& nombre) {
 
 }
 
-void Pantalla_SPI::mostrarTiempo(uint32_t actual, uint32_t total) {
+void Pantalla_SPI::mostrarTiempo(uint32_t actual) {
     tft.fillRect(0, 90, 320, 20, TFT_BLACK);  // borrar solo línea de tiempo
     tft.setTextSize(2);
     char buffer[32];
-    snprintf(buffer, sizeof(buffer), "%02d:%02d / %02d:%02d",
-             actual / 60, actual % 60, total / 60, total % 60);
+    snprintf(buffer, sizeof(buffer), "------%02d:%02d------",
+             actual / 60, actual % 60 );
     mostrarTexto(buffer, 90);
 }
 
@@ -82,12 +82,12 @@ void Pantalla_SPI::mostrarEstadoReproduccion(bool pausado) {
 //#include <algorithm> // si estás en un entorno que lo soporta
 
 void Pantalla_SPI::mostrarVolumen(float volumen) {
-    // Asegurar que el volumen está entre 0.0 y 2.0
+    // Asegurar que el volumen está entre 0.0 y 3.0
     if (volumen < 0.0) volumen = 0.0;
-    if (volumen > 2.0) volumen = 2.0;
+    if (volumen > 3.0) volumen = 3.0;
 
-    const float paso = 0.2;
-    const int max_cuadros = 10;  // 2.0 / 0.2 = 10 cuadros
+    const float paso = 0.3;
+    const int max_cuadros = 10;  // 3.0 / 0.3 = 10 cuadros
     int cuadros_activos = (int)(volumen / paso + 0.001); // evitar error de redondeo flotante
     if (cuadros_activos > max_cuadros) cuadros_activos = max_cuadros;
 
