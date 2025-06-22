@@ -147,9 +147,8 @@ void loop() {
 static unsigned long ultimaActualizacion = 0;
 if (!webosd && millis() - ultimaActualizacion >= 1000 && i2s->isPlaying()) {
   uint32_t actual = i2s->getTiempoActual();
-  uint32_t total = 0;
   if (!i2s->isPaused()){
-    pan.mostrarTiempo(actual, total);
+    pan.mostrarTiempo(actual);
   }
   
   ultimaActualizacion = millis();
