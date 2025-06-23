@@ -18,9 +18,6 @@ wifi_connect* red;
 const char* ssid = "DIGIFIBRA-EH74"; //DIGIFIBRA-EH74    RedmiNote7
 const char* password = "FCPTEX5t35"; // FCPTEX5t35      estacosa
 
-// Stream
-const char* streamURL = "http://media-ice.musicradio.com/ClassicFMMP3";//http://media-ice.musicradio.com/ClassicFMMP3
-
 // Reproduccion desde web o desde SD
 bool webosd = false;  // false == SD, true == web
 std::vector<String> listaCanciones;
@@ -71,6 +68,8 @@ void setup() {
     Serial.println("No se encontraron canciones en la SD");
     while (true); // Detener ejecución
   }
+  radio = new WebRadio(sd);
+  radio->iniciar();
 
   i2s->begin_SD(listaCanciones, 0);
   Serial.println("prueba3");
@@ -81,7 +80,7 @@ void setup() {
 }
 
 void loop() {
-
+  
   // Cambiar modo SD/Web
   if (digitalRead(BOTON_WEBoSD) == LOW) {
     webosd = !webosd;
@@ -94,10 +93,12 @@ void loop() {
 
     // Iniciar nuevo modo
     if (webosd) {
-      i2s->begin_web(streamURL);
       pan.limpiar();
-      pan.mostrarNombreEstacion("ClassicFMMP3");
-    } else {
+      pan.mostrarNombreEstacion("Reproduciendo en la web");
+      pan.mostrarNombreCancion(WiFi.localIP().toString());
+
+    } 
+    else {
       i2s->begin_SD(listaCanciones, 0);
       pan.mostrarNombreCancion(i2s->getNombreCancionActual());
       pan.limpiar();
@@ -111,7 +112,8 @@ void loop() {
 
   // Ejecutar loop según el modo actual
   if (webosd) {
-    i2s->loop_web(streamURL);
+    radio->manejarClientes();
+  
   } else {
     i2s->loop_SD();
   }
