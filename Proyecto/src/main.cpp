@@ -38,13 +38,19 @@ Lector_SD sd;
 //inicializacion del programa
 void setup() {
   Serial.begin(115200);
+
+  // Crear instancias de objetos
+  red = new wifi_connect();
+  i2s = new I2S_Audio(I2S_BCLK, I2S_LRC, I2S_DOUT);
+
   pan.iniciar();
   sd.iniciar();
-  pan.mostrarTexto("iniciando sd",20);
+  pan.mostrarTexto("iniciando sd", 20);
   delay(1000);
-  red->conectar(ssid, password,pan);
 
-  //asignacion de pines de botones
+  red->conectar(ssid, password, pan);
+
+  // Configurar botones
   pinMode(BOTON_NEXT, INPUT_PULLUP);
   pinMode(BOTON_SUBIR, INPUT_PULLUP);
   pinMode(BOTON_PAUSA, INPUT_PULLUP);
@@ -52,17 +58,20 @@ void setup() {
   pinMode(BOTON_PREV, INPUT_PULLUP);
   pinMode(BOTON_WEBoSD, INPUT_PULLUP);
 
-  i2s = new I2S_Audio(I2S_BCLK, I2S_LRC, I2S_DOUT);
-  
-
-  pan.mostrarTexto("iniciando sd",20);
+  // Mostrar volumen
+  pan.mostrarTexto("cargando volumen", 20);
   pan.mostrarVolumen(i2s->getGain());
-  Serial.println("prueba1");
 
+  Serial.println("prueba1");
   listaCanciones = sd.obtenerListaCanciones();
   Serial.println("prueba2");
 
-  //Empezamos el dispositivo en reproduccion desde la SD
+  if (listaCanciones.empty()) {
+    pan.mostrarTexto("No hay canciones en SD", 20);
+    Serial.println("No se encontraron canciones en la SD");
+    while (true); // Detener ejecución
+  }
+
   i2s->begin_SD(listaCanciones, 0);
   Serial.println("prueba3");
 
