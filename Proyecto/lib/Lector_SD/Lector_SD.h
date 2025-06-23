@@ -16,8 +16,6 @@ extern SPIClass SPI_SD;
 class Lector_SD {
 public:
     bool iniciar();
-    File obtenerCancion(const String& nombreArchivo);
-    void listarCanciones();
     std::vector<String> obtenerListaCanciones();
 private:
     std::vector<String> canciones;
