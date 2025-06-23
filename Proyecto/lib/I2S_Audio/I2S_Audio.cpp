@@ -6,31 +6,6 @@ I2S_Audio::I2S_Audio(int bclk, int lrc, int dout) {
     
 }
 
-
-
-/////////   Metodos Audio Web    /////////  
-
-void I2S_Audio::begin_web( const char* streamURL) {
-    wfile = new AudioFileSourceICYStream(streamURL);
-    wfile->SetReconnect(5, 1000);
-    mp3 = new AudioGeneratorMP3();
-    mp3->begin(wfile, out);
-}
-
-void I2S_Audio::loop_web( const char* streamURL  ) {
-    if (mp3 && !mp3->loop()) {
-            Serial.println("Stream terminado o error. Reiniciando...");
-            mp3->stop();
-
-            wfile->close();
-            delete wfile;
-            begin_web(streamURL);
-        
-    }
-}
-
-
-
 /////////   Metodos Audio SD    /////////  
 
 void I2S_Audio::begin_SD(const std::vector<String>& lista, int index) {
