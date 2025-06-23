@@ -14,10 +14,6 @@ class I2S_Audio {
 public:
     I2S_Audio(int bclk, int lrc, int dout);
 
-    //metodos web
-    void begin_web( const char* streamURL);
-    void loop_web(const char* url  ) ;
-
     //metodos sd
     void begin_SD( const std::vector<String>& lista, int index);
     void loop_SD(  ) ;
