@@ -30,18 +30,6 @@ std::vector<String> Lector_SD::obtenerListaCanciones() {
 
 
 
-File Lector_SD::obtenerCancion(const String& nombreArchivo) {
-    return SD.open("/" + nombreArchivo);
-}
 
-
-
-void Lector_SD::listarCanciones() {
-    File root = SD.open("/");
-    while (File file = root.openNextFile()) {
-        Serial.println(file.name());
-        file.close();
-    }
-}
 
 
