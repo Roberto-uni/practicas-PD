@@ -21,7 +21,6 @@ void I2S_Audio::loop_web( const char* streamURL  ) {
     if (mp3 && !mp3->loop()) {
             Serial.println("Stream terminado o error. Reiniciando...");
             mp3->stop();
-            delete mp3;
 
             wfile->close();
             delete wfile;
@@ -57,7 +56,7 @@ void I2S_Audio::loop_SD(  ){
     if (paused) {
         return;  // No hacer nada si está en pausa
     }
-    if (mp3 && mp3->isRunning()) {
+    if (isPlaying()) {
         if (!mp3->loop()) {
             mp3->stop();
         Serial.println("Reproducción finalizada.");
@@ -88,20 +87,23 @@ void I2S_Audio::AnteriorCancion() {
     begin_SD(canciones, indiceActual);  // Reproduce siguiente
 }
 
-uint32_t I2S_Audio::getDuracionEstimado() {
-    if (canciones.empty()) return 0;
-    String nombre = canciones[indiceActual];
-    File archivo = SD.open("/" + nombre);
-    if (!archivo) return 0;
-
-    uint32_t tamanio = archivo.size();  // bytes
-    archivo.close();
-
-    const uint32_t bitrate = 8000; // 128 kbps = 16,000 bytes/s
-    return tamanio / bitrate; // segundos aproximados
+void I2S_Audio::Pausa() {
+    if (isPlaying()) {
+        paused = !paused;
+        if (paused) {
+            tiempoAcumulado += (millis() - tiempoInicio) / 1000;
+            Serial.println("⏸ Pausado");
+        } else {
+            tiempoInicio = millis();
+            Serial.println("▶ Reanudado");
+        }
+    }
 }
 
-
+String I2S_Audio::getNombreCancionActual() {
+    if (canciones.empty()) return "";
+    return canciones[indiceActual];
+}
 
 /////////   Metodos Generales    /////////    
 
@@ -113,13 +115,10 @@ bool I2S_Audio::isPlaying() {
   return mp3 && mp3->isRunning();
 }
 
-String I2S_Audio::getNombreCancionActual() {
-    if (canciones.empty()) return "";
-    return canciones[indiceActual];
-}
+
 
 void I2S_Audio::stop() {
-  if (mp3 && mp3->isRunning()) {
+  if (isPlaying()) {
     mp3->stop();
     delete mp3;
     
@@ -154,18 +153,7 @@ void I2S_Audio::bajarVolumen() {
 ;
 }
 
-void I2S_Audio::Pausa() {
-    if (mp3 && mp3->isRunning()) {
-        paused = !paused;
-        if (paused) {
-            tiempoAcumulado += (millis() - tiempoInicio) / 1000;
-            Serial.println("⏸ Pausado");
-        } else {
-            tiempoInicio = millis();
-            Serial.println("▶ Reanudado");
-        }
-    }
-}
+
 
 uint32_t I2S_Audio::getTiempoActual() {
     if (paused) {
