@@ -50,10 +50,6 @@ void WebRadio::manejarRaiz() {
       <ul>
     )rawliteral";
 
-    for (const String& nombre : canciones) {
-        html += "<li><a href=\"#\" onclick=\"playSong('" + nombre + "')\">" + nombre + "</a></li>";
-    }
-
     html += R"rawliteral(
       </ul>
       <audio id="player" controls>
@@ -77,6 +73,10 @@ void WebRadio::manejarRaiz() {
     </html>
     )rawliteral";
 
+      for (const String& nombre : canciones) {
+      html += "<li><a href=\"#\" onclick=\"playSong('" + nombre + "')\">" + nombre + "</a></li>";
+    }
+
     server.send(200, "text/html", html);
 }
 
@@ -94,6 +94,8 @@ void WebRadio::manejarStream() {
         return;
     }
 
+    estaTransmitiendo = true;
     server.streamFile(archivo, "audio/mpeg");
     archivo.close();
+    estaTransmitiendo = false;
 }
