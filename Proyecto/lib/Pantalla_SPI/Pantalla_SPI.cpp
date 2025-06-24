@@ -42,36 +42,36 @@ void Pantalla_SPI::mostrarNombreCancion(const String& nombre) {
 }
 
 void Pantalla_SPI::mostrarTiempo(uint32_t actual) {
-    tft.fillRect(0, 90, 320, 20, TFT_BLACK);  // borrar solo línea de tiempo
+    tft.fillRect(0, 110, 320, 20, TFT_BLACK);  // borrar solo línea de tiempo
     tft.setTextSize(2);
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "------%02d:%02d------",
              actual / 60, actual % 60 );
-    mostrarTexto(buffer, 90);
+    mostrarTexto(buffer, 110);
 }
 
 
 void Pantalla_SPI::mostrarEstadoReproduccion(bool pausado) {
     // Borra el área donde se mostrará el estado (ajusta tamaño y posición si es necesario)
-    tft.fillRect(0, 60, 160, 20, TFT_BLACK); // Área limpia
+    tft.fillRect(0, 85, 160, 20, TFT_BLACK); // Área limpia
     tft.setTextSize(1);
     if (pausado) {
         // Dibuja dos barras verticales (símbolo de pausa)
-        tft.fillRect(10, 65, 4, 10, TFT_WHITE);
-        tft.fillRect(18, 65, 4, 10, TFT_WHITE);
+        tft.fillRect(10, 85, 4, 10, TFT_WHITE);
+        tft.fillRect(18, 85, 4, 10, TFT_WHITE);
 
         // Muestra texto "Pausado"
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.setCursor(30, 70);
+        tft.setCursor(30, 90);
         tft.setTextSize(1);
         tft.print("Pausado");
     } else {
         // Dibuja triángulo (símbolo de reproducción)
-        tft.fillTriangle(10, 65, 10, 75, 20, 70, TFT_WHITE);
+        tft.fillTriangle(10, 85, 10, 95, 20, 90, TFT_WHITE);
 
         // Muestra texto "Reproduciendo"
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.setCursor(30, 70);
+        tft.setCursor(30, 90);
         tft.setTextSize(1);
         tft.print("Reproduciendo");
     }
