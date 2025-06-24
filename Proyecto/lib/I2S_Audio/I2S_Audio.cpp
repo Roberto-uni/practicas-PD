@@ -6,6 +6,7 @@ I2S_Audio::I2S_Audio(int bclk, int lrc, int dout) {
     
 }
 
+
 /////////   Metodos Audio SD    /////////  
 
 void I2S_Audio::begin_SD(const std::vector<String>& lista, int index) {
@@ -93,17 +94,13 @@ bool I2S_Audio::isPlaying() {
 
 
 void I2S_Audio::stop() {
-  if (isPlaying()) {
+  if (isPlaying() && mp3) {
     mp3->stop();
     delete mp3;
     
   }
 
-  if (wfile && mp3->isRunning()) {
-    wfile->close();
-    delete wfile;
-    
-  }
+  
 
   if (sfile && mp3->isRunning()) {
     sfile->close();
