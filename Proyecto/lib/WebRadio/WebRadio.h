@@ -7,10 +7,12 @@
 class WebRadio {
 public:
     // Recibe referencia a Lector_SD externo y puerto del servidor (default 80)
-    WebRadio(Lector_SD& lectorSd, uint16_t puerto = 80);
+    WebRadio(Lector_SD& lectorSd, uint16_t puerto);
 
     void iniciar();
     void manejarClientes();
+
+    bool estaTransmitiendo = false;
 
 private:
     WebServer server;
