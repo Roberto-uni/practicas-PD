@@ -85,7 +85,8 @@ void WebRadio::manejarStream() {
         server.send(400, "text/plain", "Falta argumento 'file'");
         return;
     }
-
+    
+    estaTransmitiendo = true;
     String ruta = "/" + server.arg("file");
     File archivo = SD.open(ruta.c_str(), FILE_READ);
 
@@ -94,7 +95,6 @@ void WebRadio::manejarStream() {
         return;
     }
 
-    estaTransmitiendo = true;
     server.streamFile(archivo, "audio/mpeg");
     archivo.close();
     estaTransmitiendo = false;
