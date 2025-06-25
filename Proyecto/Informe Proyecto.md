@@ -10,7 +10,7 @@ El dispositivo dispone de los botones esenciales para su uso, estos siendo un bo
 
 Adicionalmente dispone de un display digital que muestra información relevante como el modo de reproducción actual, el nombre de la canción, estado de reproducción (pausado o reproduciendo), tiempo que lleva sonando la canción y un indicador gráfico del volumen.
 
-En el modo de reproducción web, la pantalla indica la dirección ip para acceder al servidor. La pagina generada nos permite elegir entre las canciones que se hayan cargado de la sd y también nos permite controlar el volumen, pausar o reproducir y “”””lo de la barrita de tiempo””””
+En el modo de reproducción web, la pantalla indica la dirección ip para acceder al servidor. La pagina generada nos permite elegir entre las canciones que se hayan cargado de la sd y también nos permite controlar el volumen, pausar o reproducir y la barra de progreso
 
 ## Diagrama de bloques y módulos utilizados
 
